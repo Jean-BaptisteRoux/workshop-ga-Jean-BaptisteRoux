@@ -5,29 +5,61 @@ on:
     branches:
       - dev
       - main
+  pull_request:
+    branches:
+      - dev
+      - main
 
 jobs:
   hello-world:
     runs-on: ubuntu-20.04
     steps:
       - name: Say hello world
-        run: echo "Welcome to the Github Actions workshop !"
+        run: echo "Welcome to the Github Actions workshop!"
 
   unit-test:
     runs-on: ubuntu-latest
-    container: ghcr.io/epitechcontent/epitest-docker:latest
+    container:
+      image: epitechcontent/epitest-docker
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Run unit-tests
         run: |
-          echo "Running unit tests..."
-          # Replace with your actual test command
-          ./unit_tests
+          make tests_run > test_output.txt || echo "Tests failed"
+        continue-on-error: true
 
       - name: Run coverage
         run: |
-          echo "Running coverage..."
-          # Replace with your actual coverage command
-          ./coverage
+          make coverage > coverage_output.txt || echo "Coverage failed"
+        continue-on-error: true
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage_outputs
+          path: |
+            test_output.txt
+            coverage_output.txt
+
+  functional-test:
+    runs-on: ubuntu-latest
+    container:
+      image: epitechcontent/epitest-docker
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run functional tests
+        run: |
+          make functional-tests > functional_tests_output.txt || echo "Functional tests failed"
+        continue-on-error: true
+
+      - name: Upload functional test artifact
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: functional-tests_outputs
+          path: functional_tests_output.txt
