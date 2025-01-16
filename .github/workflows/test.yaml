@@ -11,5 +11,20 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Say hello world
-        run: echo "Welcome to the Github Actions workshop !"
-  
+        run: echo "Welcome to the GitHub Actions workshop!"
+
+  unit-test:
+    runs-on: ubuntu-20.04
+    container:
+      image: epitechcontent/epitest-docker:latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Run unit tests
+        run: |
+          make tests_run
+
+      - name: Run coverage
+        run: |
+          gcovr --branches --exclude-directories tests/
